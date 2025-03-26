@@ -1,0 +1,13 @@
+[project]
+name = "datura-task"
+version = "0.1.0"
+description = "Asynchronous FastAPI service for Bittensor blockchain queries with Redis caching and sentiment-based stake operations"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ipython>=9.0.2",
+    "ruff>=0.11.2",
+]
