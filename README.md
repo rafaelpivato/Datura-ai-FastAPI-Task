@@ -71,3 +71,20 @@ You can run tests with pytest also.
 ### Performance Goal
 
 The system is designed to handle **~1000 concurrent requests**, ensuring responsiveness with async operations and background tasks.
+
+## Implementation Details
+
+This main objective of this task is to implement one API endpoint that will:
+
+- Authenticate users via a bearer token.
+- Accept a subnet ID and a hotkey as query parameters.
+- Query the Bittensor blockchain for the latest Tao dividends.
+- Cache the results for 2 minutes.
+
+When trade query parameter is set to true, the system should:
+
+- Use Datura.ai to search relevant tweets.
+- Use Chutes.ai to analyze the sentiment of the tweets.
+- Stake or unstake using Bittensor via testnet.
+
+The system should be designed to handle concurrent requests efficiently, with a focus on performance and scalability. It should return TaoDividends data immediately and perform stake/unstake actions asynchronously.
