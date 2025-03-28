@@ -1,37 +1,37 @@
-from celery import Celery
 from datetime import datetime
 from typing import Optional
 
-from app.models import TaoDividends, SentimentAnalysis
+from celery import Celery
+
 from app.database import store_dividends, store_sentiment
+from app.models import SentimentAnalysis, TaoDividends
 
 # Celery configuration
 celery_app = Celery(
-    'tao_dividends',
-    broker='redis://localhost:6379/0',
-    backend='redis://localhost:6379/0'
+    "tao_dividends",
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0",
 )
 
 celery_app.conf.update(
-    task_serializer='json',
-    accept_content=['json'],
-    result_serializer='json',
-    timezone='UTC',
+    task_serializer="json",
+    accept_content=["json"],
+    result_serializer="json",
+    timezone="UTC",
     enable_utc=True,
 )
+
 
 @celery_app.task
 async def query_blockchain(netuid: int, hotkey: str) -> TaoDividends:
     # TODO: Implement blockchain query logic
     # This is a placeholder implementation
     dividends = TaoDividends(
-        netuid=netuid,
-        hotkey=hotkey,
-        dividends=0.0,
-        timestamp=datetime.utcnow()
+        netuid=netuid, hotkey=hotkey, dividends=0.0, timestamp=datetime.utcnow()
     )
     await store_dividends(dividends)
     return dividends
+
 
 @celery_app.task
 async def analyze_sentiment(netuid: int, hotkey: str) -> Optional[SentimentAnalysis]:
@@ -44,7 +44,7 @@ async def analyze_sentiment(netuid: int, hotkey: str) -> Optional[SentimentAnaly
         hotkey=hotkey,
         sentiment_score=0.0,
         tweet_count=0,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
     )
     await store_sentiment(sentiment)
     return sentiment

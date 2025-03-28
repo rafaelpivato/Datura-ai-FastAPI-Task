@@ -1,11 +1,11 @@
+import os
+from typing import Optional
+
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from redis import asyncio as aioredis
-from typing import Optional
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-import os
 
-from app.models import TaoDividends, SentimentAnalysis
+from app.models import SentimentAnalysis, TaoDividends
 
 # Load environment variables
 load_dotenv()
@@ -33,17 +33,19 @@ async def init_db():
 
 async def init_redis():
     global redis_client
-    redis_client = await aioredis.from_url(REDIS_URL, encoding="utf-8", decode_responses=True)
+    redis_client = await aioredis.from_url(
+        REDIS_URL, encoding="utf-8", decode_responses=True
+    )
     return redis_client
 
 
 async def get_cached_dividends(netuid: int, hotkey: str) -> Optional[TaoDividends]:
     if not redis_client:
         return None
-    
+
     cache_key = f"dividends:{netuid}:{hotkey}"
     cached_data = await redis_client.get(cache_key)
-    
+
     if cached_data:
         return TaoDividends.parse_raw(cached_data)
     return None
@@ -52,19 +54,15 @@ async def get_cached_dividends(netuid: int, hotkey: str) -> Optional[TaoDividend
 async def cache_dividends(dividends: TaoDividends):
     if not redis_client:
         return
-    
+
     cache_key = f"dividends:{dividends.netuid}:{dividends.hotkey}"
-    await redis_client.set(
-        cache_key,
-        dividends.json(),
-        ex=CACHE_TTL
-    )
+    await redis_client.set(cache_key, dividends.json(), ex=CACHE_TTL)
 
 
 async def store_dividends(dividends: TaoDividends):
     if not mongo_client:
         return
-    
+
     collection = mongo_client[DATABASE_NAME]["dividends"]
     await collection.insert_one(dividends.dict())
 
@@ -72,6 +70,6 @@ async def store_dividends(dividends: TaoDividends):
 async def store_sentiment(sentiment: SentimentAnalysis):
     if not mongo_client:
         return
-    
+
     collection = mongo_client[DATABASE_NAME]["sentiment"]
     await collection.insert_one(sentiment.dict())

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -69,7 +70,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    
+
     # TODO: Implement user database lookup
     user = User(username=token_data.username)
     if user is None:
@@ -77,7 +78,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     return user
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_active_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user

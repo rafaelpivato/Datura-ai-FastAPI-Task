@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 
 app = FastAPI(
     title="Tao Dividends API",
     description="Asynchronous FastAPI service for querying Tao dividends from the Bittensor blockchain",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 # Configure CORS
@@ -28,10 +28,7 @@ async def root():
 
 @app.get("/api/v1/tao_dividends")
 async def get_tao_dividends(
-    netuid: int,
-    hotkey: str,
-    trade: bool = False,
-    token: str = Depends(oauth2_scheme)
+    netuid: int, hotkey: str, trade: bool = False, token: str = Depends(oauth2_scheme)
 ):
     # TODO: Implement the following:
     # 1. Validate token
