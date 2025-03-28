@@ -32,6 +32,13 @@ celery -A app.worker worker --loglevel=info
 
 You can run tests with pytest also.
 
+To start required services locally you can use the following Docker commands:
+
+```console
+docker run -d --name redis -p 6379:6379 redis
+docker run -d --name mongo -p 27017:27017 mongo
+```
+
 ## API Endpoints
 
 1. **GET /api/v1/tao_dividends**  
