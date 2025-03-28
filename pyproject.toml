@@ -4,10 +4,22 @@ version = "0.1.0"
 description = "Asynchronous FastAPI service for Bittensor blockchain queries with Redis caching and sentiment-based stake operations"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.27.1",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "redis>=5.0.1",
+    "celery>=5.3.6",
+    "motor>=3.3.2",
+    "python-dotenv>=1.0.1",
+]
 
 [dependency-groups]
 dev = [
     "ipython>=9.0.2",
     "ruff>=0.11.2",
+    "pytest>=8.0.2",
+    "pytest-asyncio>=0.23.5",
+    "httpx>=0.27.0",
 ]
