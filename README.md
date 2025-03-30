@@ -95,3 +95,32 @@ When trade query parameter is set to true, the system should:
 - Stake or unstake using Bittensor via testnet.
 
 The system should be designed to handle concurrent requests efficiently, with a focus on performance and scalability. It should return TaoDividends data immediately and perform stake/unstake actions asynchronously.
+
+### Setting up btcli and Getting Testnet Tokens
+
+1. **Install btcli**
+
+   ```console
+   pip install btcli
+   ```
+
+2. **Create a New Wallet**
+
+   ```console
+   btcli wallet new_coldkey --wallet.name default --no_prompt
+   btcli wallet new_hotkey --wallet.name default --wallet.hotkey default --no_prompt
+   ```
+
+3. **Regenerate Wallet from Seed**
+   To access the testnet wallet with 40 TAO:
+
+   ```console
+   btcli wallet regen_coldkey --mnemonic "diamond like interest affair safe clarify lawsuit innocent beef van grief color" --wallet.name testnet --no_prompt
+   ```
+
+4. **Transfer Testnet Tokens**
+   Transfer TAO from the testnet wallet to your default wallet:
+   ```console
+   btcli wallet transfer --amount 40 --wallet.name testnet --dest_ss58key <your-wallet-ss58-address>
+   ```
+   Replace `<your-wallet-ss58-address>` with your wallet's SS58 address (you can find it using `btcli wallet overview --wallet.name default`)
