@@ -71,30 +71,30 @@ def create_default_wallet() -> bool:
         return False
 
 
-def setup_testnet_wallet() -> bool:
-    """Create testnet wallet using predefined mnemonic for coldkey."""
+def setup_datura_wallet() -> bool:
+    """Create datura wallet using predefined mnemonic for coldkey."""
     try:
-        wallet = bittensor.wallet(name="testnet")
+        wallet = bittensor.wallet(name="datura")
 
         # Regenerate coldkey with mnemonic
         wallet.regenerate_coldkey(mnemonic=DEFAULT_MNEMONIC, use_password=False)
-        console.print("[green]Created testnet wallet with predefined coldkey[/green]")
+        console.print("[green]Created datura wallet with predefined coldkey[/green]")
 
         # Create hotkey
         wallet.create_new_hotkey(use_password=False)
-        console.print("[green]Added new hotkey to testnet wallet[/green]")
+        console.print("[green]Added new hotkey to datura wallet[/green]")
 
         return True
     except Exception as e:
-        console.print(f"[red]Error setting up testnet wallet: {e}[/red]")
+        console.print(f"[red]Error setting up datura wallet: {e}[/red]")
         return False
 
 
 def transfer_tao(dest_address: str, amount: float) -> bool:
     """Transfer TAO from default wallet to destination address."""
     try:
-        wallet = bittensor.wallet(name="default")
-        subtensor = bittensor.subtensor()
+        wallet = bittensor.wallet(name="datura")
+        subtensor = bittensor.subtensor(network="test")
 
         # Check balance before transfer
         balance = subtensor.get_balance(wallet.coldkeypub.ss58_address)
@@ -140,14 +140,14 @@ def main():
             console.print("[red]Failed to create default wallet[/red]")
             sys.exit(1)
 
-    # Setup testnet wallet if it doesn't exist
-    if not check_wallet("testnet"):
-        console.print("Creating new testnet wallet...")
-        if not setup_testnet_wallet():
-            console.print("[red]Failed to setup testnet wallet[/red]")
+    # Setup datura wallet if it doesn't exist
+    if not check_wallet("datura"):
+        console.print("Creating new datura wallet...")
+        if not setup_datura_wallet():
+            console.print("[red]Failed to setup datura wallet[/red]")
             sys.exit(1)
     else:
-        console.print("[green]Testnet wallet already exists[/green]")
+        console.print("[green]Datura wallet already exists[/green]")
 
     # Handle optional transfer
     if args.transfer is not None:
