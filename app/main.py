@@ -4,7 +4,7 @@ from datetime import datetime
 
 from celery import Celery
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 
@@ -69,11 +69,26 @@ async def root():
     return {"message": "Welcome to Tao Dividends API"}
 
 
-@app.get("/api/v1/tao_dividends")
+@app.get("/api/v1/tao_dividends", response_model=TaoDividends)
 async def get_tao_dividends(
-    netuid: int,
-    hotkey: str,
-    trade: bool = False,
+    netuid: int = Query(
+        ...,
+        description="Subnet ID to query dividends for",
+        ge=0,
+        example=4,
+    ),
+    hotkey: str = Query(
+        ...,
+        description="Hotkey (account ID or public key) to query dividends for",
+        min_length=48,
+        max_length=64,
+        regex="^5[A-Za-z0-9]+$",
+        example="5GpzQgpiAKHMWNSH3RN4GLf96GVTDct9QxYEFAY7LWcVzTbx",
+    ),
+    trade: bool = Query(
+        False,
+        description="Whether to trigger sentiment analysis and trading based on results",
+    ),
     token: str = Depends(oauth2_scheme),
 ):
     # TODO: IMPLEMENT AUTHENTICATION AND AUTHORIZATION
@@ -104,14 +119,31 @@ async def get_tao_dividends(
             netuid,
             hotkey,
         )
-        dividend_balance = await querier.get_tao_dividends_per_subnet(netuid, hotkey)
-        if dividend_balance is None:
-            logger.debug(
-                "No dividend data found for netuid=%s, hotkey=%s",
+        try:
+            dividend_balance = await querier.get_tao_dividends_per_subnet(
+                netuid, hotkey
+            )
+            if dividend_balance is None:
+                logger.debug(
+                    "No dividend data found for netuid=%s, hotkey=%s",
+                    netuid,
+                    hotkey,
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"No dividend data found for netuid={netuid}, hotkey={hotkey}",
+                )
+        except Exception as e:
+            logger.error(
+                "Error querying blockchain: %s for netuid=%s, hotkey=%s",
+                str(e),
                 netuid,
                 hotkey,
             )
-            return {"error": "No dividend data found"}
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Error connecting to blockchain service",
+            ) from e
 
         logger.debug(
             "Dividend balance retrieved: %s for netuid=%s, hotkey=%s",
