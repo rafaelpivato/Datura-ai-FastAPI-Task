@@ -25,7 +25,8 @@ load_dotenv()
 debug_mode = os.getenv("DEBUG", "false").lower() in ("true", "1", "t")
 log_level = logging.DEBUG if debug_mode else logging.INFO
 logging.basicConfig(
-    level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=log_level,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 @app.on_event("startup")
 async def startup_event():
     logger.info(
-        "Starting Tao Dividends API in %s mode"
-        % ("debug" if debug_mode else "production")
+        "Starting Tao Dividends API in %s mode",
+        "debug" if debug_mode else "production",
     )
     await init_db()
     await init_redis()
@@ -77,36 +78,46 @@ async def get_tao_dividends(
 ):
     # TODO: IMPLEMENT AUTHENTICATION AND AUTHORIZATION
     logger.debug(
-        "Tao dividends requested for netuid=%s, hotkey=%s, trade=%s"
-        % (netuid, hotkey, trade)
+        "Tao dividends requested for netuid=%s, hotkey=%s, trade=%s",
+        netuid,
+        hotkey,
+        trade,
     )
 
     # First check cache
     cached_result = await get_cached_dividends(netuid, hotkey)
     if cached_result:
-        logger.debug("Cache hit for netuid=%s, hotkey=%s" % (netuid, hotkey))
+        logger.debug("Cache hit for netuid=%s, hotkey=%s", netuid, hotkey)
         return cached_result
 
     logger.debug(
-        "Cache miss for netuid=%s, hotkey=%s, querying blockchain" % (netuid, hotkey)
+        "Cache miss for netuid=%s, hotkey=%s, querying blockchain",
+        netuid,
+        hotkey,
     )
 
     # Query blockchain
     querier = TaoDividendQuerier()
     try:
         logger.debug(
-            "Querying blockchain for dividends: netuid=%s, hotkey=%s" % (netuid, hotkey)
+            "Querying blockchain for dividends: netuid=%s, hotkey=%s",
+            netuid,
+            hotkey,
         )
         dividend_balance = await querier.get_tao_dividends_per_subnet(netuid, hotkey)
         if dividend_balance is None:
             logger.debug(
-                "No dividend data found for netuid=%s, hotkey=%s" % (netuid, hotkey)
+                "No dividend data found for netuid=%s, hotkey=%s",
+                netuid,
+                hotkey,
             )
             return {"error": "No dividend data found"}
 
         logger.debug(
-            "Dividend balance retrieved: %s for netuid=%s, hotkey=%s"
-            % (dividend_balance, netuid, hotkey)
+            "Dividend balance retrieved: %s for netuid=%s, hotkey=%s",
+            dividend_balance,
+            netuid,
+            hotkey,
         )
 
         # Create response model
@@ -119,8 +130,9 @@ async def get_tao_dividends(
 
         # Cache and store results
         logger.debug(
-            "Caching and storing dividend results for netuid=%s, hotkey=%s"
-            % (netuid, hotkey)
+            "Caching and storing dividend results for netuid=%s, hotkey=%s",
+            netuid,
+            hotkey,
         )
         await cache_dividends(dividends)
         await store_dividends(dividends)
@@ -128,11 +140,13 @@ async def get_tao_dividends(
         # If trade flag is set, trigger sentiment analysis
         if trade:
             logger.debug(
-                "Trade flag set, triggering sentiment analysis for netuid=%s, hotkey=%s"
-                % (netuid, hotkey)
+                "Trade flag set, triggering sentiment analysis for netuid=%s, hotkey=%s",
+                netuid,
+                hotkey,
             )
             await celery_app.send_task(
-                "app.worker.analyze_sentiment", args=[netuid, hotkey]
+                "app.worker.analyze_sentiment",
+                args=[netuid, hotkey],
             )
 
         return dividends
