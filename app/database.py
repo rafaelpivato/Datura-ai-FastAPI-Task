@@ -47,7 +47,9 @@ async def get_cached_dividends(netuid: int, hotkey: str) -> Optional[TaoDividend
     cached_data = await redis_client.get(cache_key)
 
     if cached_data:
-        return TaoDividends.parse_raw(cached_data)
+        dividends = TaoDividends.parse_raw(cached_data)
+        dividends.cached = True
+        return dividends
     return None
 
 
