@@ -1,6 +1,7 @@
 from typing import Optional
 
 from bittensor import AsyncSubtensor
+from bittensor.core.subtensor import ScaleObj
 from bittensor.utils.balance import Balance
 
 
@@ -10,7 +11,7 @@ class TaoDividendQuerier:
 
     async def _ensure_connection(self):
         if self._connection is None:
-            self._connection = AsyncSubtensor()
+            self._connection = AsyncSubtensor(network="test")
         return self._connection
 
     async def get_tao_dividends_per_subnet(
@@ -18,15 +19,20 @@ class TaoDividendQuerier:
     ) -> Optional[Balance]:
         try:
             self.subtensor = await self._ensure_connection()
-            result = await self.subtensor.query_map(
-                "SubtensorModule", "TaoDividendsPerSubnet", netuid, hotkey
+            result = await self.subtensor.query_module(
+                "SubtensorModule",
+                "TaoDividendsPerSubnet",
+                params=[netuid, hotkey],
             )
-            if result:
-                return Balance.from_rao(int(str(result)))
+            if (
+                result is not None
+                and isinstance(result, ScaleObj)
+                and isinstance(result.value, int)
+            ):
+                return Balance.from_rao(result.value)
             return None
-        except Exception as e:
-            print(f"Error querying TaoDividendsPerSubnet: {str(e)}")
-            return None
+        except Exception as error:
+            raise Exception("Error querying TaoDividendsPerSubnet") from error
 
     async def close(self):
         if self._connection:
@@ -37,10 +43,10 @@ class TaoDividendQuerier:
 async def main():
     querier = TaoDividendQuerier()
     try:
-        # Example using testnet with netuid 1 and a test hotkey
-        test_hotkey = "5FFApaS75bv5pJHfAp2FVLBj9ZaXuFDjEypsaBNc1wCfe52v"
+        test_hotkey = "5GpzQgpiAKHMWNSH3RN4GLf96GVTDct9QxYEFAY7LWcVzTbx"
         result = await querier.get_tao_dividends_per_subnet(
-            netuid=18, hotkey=test_hotkey
+            netuid=4,
+            hotkey=test_hotkey,
         )
         print(f"TAO dividends for hotkey {test_hotkey}: {result}")
     finally:
